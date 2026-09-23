@@ -1,0 +1,7 @@
+# Machine-local backups of the patched dsh-sandbox module. Never commit.
+/backups/
+
+# Runtime artifacts.
+*.log
+*.err
+node_modules/

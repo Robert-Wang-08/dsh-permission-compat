@@ -1,0 +1,15 @@
+{
+  "name": "dsh-permission-compat",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mode-aware redundant-escalation normalization patcher for DSH sandbox tools (pwsh/bash/fs).",
+  "type": "module",
+  "scripts": {
+    "apply": "node tools/apply-dsh-permission-compat.mjs",
+    "verify": "node tools/verify-dsh-permission-compat.mjs",
+    "start": "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/dsh-web-safe.ps1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
