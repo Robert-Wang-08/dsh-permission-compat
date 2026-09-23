@@ -7,6 +7,7 @@
   "scripts": {
     "apply": "node tools/apply-dsh-permission-compat.mjs",
     "verify": "node tools/verify-dsh-permission-compat.mjs",
+    "revert": "node tools/apply-dsh-permission-compat.mjs --revert",
     "start": "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/dsh-web-safe.ps1"
   },
   "engines": {
