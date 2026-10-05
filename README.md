@@ -1,6 +1,22 @@
 # dsh-permission-compat
 
-DSH（DeepSeek Harness）权限兼容工具：把 relay 侧模型（`codex-relay / gpt-5.6-sol`）每次回填"提权专用"字段 `sandbox_permissions` 导致 `pwsh` / `bash` / `write` / `edit` 被 fail-closed 拒绝的问题，修正为**模式感知的冗余提权归一化**。
+DSH（DeepSeek Harness）兼容工具：修复沙箱冗余提权声明，并在启动前检测/修复 `dsh-api-session-controller` Host 与客户端的控制基线混装问题。
+
+## Web Provider / 模型切换无界面反馈
+
+若客户端包含 `Object.entries(baseline.queues)`，但 Host 的 `baseline()` 未返回 `queues`，浏览器会报：
+
+```text
+[session-controller] control stream failed: TypeError: Cannot convert undefined or null to object
+```
+
+此时模型选择实际已经写入 Session（刷新后可见），但实时投影中断，表现为 provider / 模型点击后没有变化。`tools/ensure-dsh-session-control-compat.mjs` 会：
+
+- 正常匹配的官方包直接 `PASS`；
+- 仅在客户端明确要求 `baseline.queues` 且 Host 精确命中旧基线形状时备份并补齐空队列基线；
+- 未知代码形状拒绝修改，避免跨版本盲改。
+
+`tools/dsh-web-safe.ps1` 已在权限补丁前自动执行该检查。
 
 完整分析报告见 1.logseq 工作区：`70-WorkSpace/dsh-provider-failover/docs/dsh权限问题完整分析与处理方案-20260923.md`。
 本机复装 / dsh 升级恢复 runbook 见同工作区：`70-WorkSpace/dsh复装说明.md`。
@@ -52,7 +68,7 @@ pwsh / bash / fs 三个工具族的提权判定收敛在 `@deepseek-ai/dsh-sandb
 ## 使用
 
 ```powershell
-# 日常启动（apply → verify → dsh web，任一步失败即不启动）
+# 日常启动（session-control repair → permission apply → verify → dsh web，任一步失败即不启动）
 tools\dsh-web-safe.ps1            # 可附 dsh web 参数，如 --no-open / --port 8080
 
 # 单独应用 / 验证 / 回滚

@@ -25,6 +25,17 @@ function findDshRoot() {
 const dshRoot = findDshRoot();
 const modulesRoot = path.join(dshRoot, 'node_modules', '@deepseek-ai');
 
+const sessionControllerRoot = path.join(modulesRoot, 'dsh-api-session-controller');
+const sessionControllerHost = readFileSync(path.join(sessionControllerRoot, 'lib', 'index.js'), 'utf8');
+const sessionControllerClient = readFileSync(path.join(sessionControllerRoot, 'lib', 'client.js'), 'utf8');
+if (sessionControllerClient.includes('Object.entries(baseline.queues)')) {
+	assert.match(
+		sessionControllerHost,
+		/baseline\(\) \{[\s\S]*?const queues = Object\.create\(null\);[\s\S]*?return \{\s*queues,\s*jobs,\s*projections:/,
+		'dsh-api-session-controller client requires baseline.queues but the Host baseline omits it',
+	);
+}
+
 for (const module of ['dsh-sandbox', 'dsh-tool-pwsh', 'dsh-tool-bash', 'dsh-tool-fs']) {
 	const file = path.join(modulesRoot, module, 'lib', 'index.js');
 	assert.ok(existsSync(file), `${module} is missing at ${file}`);
