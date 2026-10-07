@@ -34,7 +34,7 @@ pwsh / bash / fs 三个工具族的提权判定收敛在 `@deepseek-ai/dsh-sandb
 
 ## 移植说明（重要）
 
-本补丁最初针对**源码树构建**编写（当时锚点函数名为 `normalizeEscalationArgs`，返回归一化对象）。npm 上发布的 `@deepseek-ai/dsh`（0.1.5-rc.2 / rc.3 / 0.1.6-alpha / 0.1.7-alpha）代码形状不同，因此已按发布包形状移植：
+本补丁最初针对**源码树构建**编写（当时锚点函数名为 `normalizeEscalationArgs`，返回归一化对象）。npm 上发布的 `@deepseek-ai/dsh`（0.1.5-rc.2 / rc.3、0.1.6-alpha、0.1.7-alpha、0.2.0-rc.2）代码形状不同，因此已按发布包形状移植：
 
 | 差异点 | 源码树构建（原补丁） | 发布包（现补丁） |
 |---|---|---|
@@ -50,6 +50,8 @@ pwsh / bash / fs 三个工具族的提权判定收敛在 `@deepseek-ai/dsh-sandb
 | `dsh-tool-pwsh/lib/index.js` | 提权守卫改为只看 `sandbox_permissions`，空理由不再静默降级 |
 | `dsh-tool-bash/lib/index.js` | 同上 |
 | `dsh-tool-fs/lib/index.js` | `resolvePolicy` 守卫改为只看 `sandbox_permissions` |
+
+`0.2.0-rc.2` 在 `approveEscalation` 中新增了 `if (mode === effectiveMode) return effectiveMode;`（上游对"同级冗余"的部分实现）。补丁锚点已把该行纳入 `old` 并在替换时移除，统一交由 `MODE_RANK` 归一化接管，因此同级冗余声明仍会输出 `redundant escalation normalized` 诊断。0.1.5 系列（rc.2 / rc.3）请使用分支 `compat-dsh-0.1.5-rc2-rc3`。
 
 ## 行为契约（补丁后）
 

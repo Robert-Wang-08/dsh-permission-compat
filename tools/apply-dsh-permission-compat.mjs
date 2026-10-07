@@ -83,6 +83,7 @@ const TARGETS = [
 				old: lines([
 					'async function approveEscalation(request, approval) {',
 					'\tconst { requestedMode: mode, effectiveMode, justification, subject } = request;',
+					'\tif (mode === effectiveMode) return effectiveMode;',
 					'\tif (!(WIDER_MODES[effectiveMode] ?? []).includes(mode)) throw new Error(`sandbox escalation to "${mode}" is not strictly wider than this call\'s current "${effectiveMode}" mode`);',
 				]),
 				new: lines([
