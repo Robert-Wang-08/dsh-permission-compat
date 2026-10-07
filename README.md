@@ -91,6 +91,10 @@ node tools\apply-dsh-permission-compat.mjs --revert
 
 `--revert` 按 `backups/` 中**当前 dsh 版本**的最新备份逐文件还原，还原后不要再经 `dsh-web-safe.ps1` 启动。
 
+## 插件 0.2 版本
+
+`tools/install-dsh-plugins.mjs` 把 web profile 里的 dsh 插件钉到 0.2 运行时兼容的版本（`dsh-subagent-claude-code` / `dsh-subagent-codex` / `dsh-subagent-acp` / `dsh-mcp-client` → `0.2.0-rc.2`，`dsh-chat-import` → `^0.25.2`）。幂等：已满足即 `SKIP`；只处理该 profile 已声明的依赖，不向其它 profile 注入；`--profile <name>` 指定 profile（默认 `web`）。`tools/dsh-web-safe.ps1` 与 ynm3000 的 `apply-dsh-compat.ps1` / `update-dsh-compat.ps1` 都会调用它。
+
 ## 升级后重放
 
 脚本、备份都在本仓库；dsh 升级只覆盖安装目录：
