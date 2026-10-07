@@ -4,6 +4,9 @@ $toolDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 & node (Join-Path $toolDir 'ensure-dsh-session-control-compat.mjs')
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+& node (Join-Path $toolDir 'apply-dsh-session-format-compat.mjs')
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 & node (Join-Path $toolDir 'apply-dsh-permission-compat.mjs')
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

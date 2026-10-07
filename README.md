@@ -18,6 +18,16 @@ DSH（DeepSeek Harness）兼容工具：修复沙箱冗余提权声明，并在�
 
 `tools/dsh-web-safe.ps1` 已在权限补丁前自动执行该检查。
 
+## 历史会话（v3 → v4）无法加载
+
+从 0.2.0 起，历史会话在读取时要迁移到 v4。部分早期导入会话的 `system/message` 不在表面首节点（例如导入时系统提示在 seq 614 才出现），迁移校验会以：
+
+```text
+Session migration from v3 to v4 refuses the transformed artifact: system/message requires a protected first surface head
+```
+
+拒绝整段迁移，表现为该历史会话无法展现。`tools/apply-dsh-session-format-compat.mjs` 放宽这一守卫（同时覆盖 `dsh-session-format-v3-to-v4`、`dsh-session-format-v2-to-v3`，以及 `dsh-session-persistence-jsonl/lib/worker.cjs` 内的内联副本），让这类历史会话可以迁移并展现；system 为首节点的正常会话行为不变。补丁标记 `DSH_SESSION_FORMAT_COMPAT_V1`。
+
 完整分析报告见 1.logseq 工作区：`70-WorkSpace/dsh-provider-failover/docs/dsh权限问题完整分析与处理方案-20260923.md`。
 本机复装 / dsh 升级恢复 runbook 见同工作区：`70-WorkSpace/dsh复装说明.md`。
 
