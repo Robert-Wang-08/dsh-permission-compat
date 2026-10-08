@@ -12,7 +12,7 @@ const PINS = {
 	'@deepseek-ai/dsh-subagent-codex': '0.2.0-rc.2',
 	'@deepseek-ai/dsh-subagent-acp': '0.2.0-rc.2',
 	'@deepseek-ai/dsh-mcp-client': '0.2.0-rc.2',
-	'dsh-chat-import': '^0.25.2',
+	'dsh-chat-import': '0.25.2',
 };
 
 const dshHome = process.env.DSH_HOME ? path.resolve(process.env.DSH_HOME) : path.join(os.homedir(), '.dsh');
