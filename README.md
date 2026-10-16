@@ -31,6 +31,30 @@ Session migration from v3 to v4 refuses the transformed artifact: system/message
 完整分析报告见 1.logseq 工作区：`70-WorkSpace/dsh-provider-failover/docs/dsh权限问题完整分析与处理方案-20260923.md`。
 本机复装 / dsh 升级恢复 runbook 见同工作区：`70-WorkSpace/dsh复装说明.md`。
 
+## 子代理失败只剩一句 `subagent run failed`
+
+进程内子代理（`provider: "spawn"`，即 `subagent_*` 工具在 Host 内建 Agent 上的执行档）失败时，调用方只能看到：
+
+```text
+Error: code run failed (exception): ToolCallError: subagent run failed
+```
+
+子会话自己的终局事件里**有**真因。实测 2026-10-16 会话 `c5e961a4`（`turn 28 / step 3`，工具 `subagent_codex_relay`）的 `turn/end`：
+
+```json
+{"kind":"error","error":{"code":"SERVER","message":"codex-relay API error (502): 502 status code (no body)"}}
+```
+
+随后接棒的 `openai-codex` 报额度用尽（`QUOTA`）、`kimi` 报 403 周额度（`AUTH`）。但 `@deepseek-ai/dsh-subagent-in-process-driver` 的 `readResult()` 只把这个 reason 折成裸 `stopReason`，从不填 `SubagentResult.diagnostic`；而 `@deepseek-ai/dsh-tool-subagent` 的 `stopReasonError()` 对 `stopReason: "error"` 返回固定文案，于是**三种完全不同的真因折叠成同一句话**。真因只留在会话日志里，必须事后翻 `session.v4.jsonl.zstd` 才能还原。
+
+`tools/apply-dsh-subagent-diagnostic-compat.mjs` 把子会话终局 reason 的错误文本接到 `diagnostic` 上（`CODE: message`，无 code 则只有 message），并沿用进程外 seam 的 4096 字节上限与 `[diagnostic truncated]` 后缀，使 `dsh-tool-subagent` 现有的 `withDiagnosticAndPartialText()` 直接生效（输出 `Diagnostic: …` 后再附已产出的部分文本）。补丁标记 `DSH_SUBAGENT_DIAGNOSTIC_COMPAT_V1`。
+
+- **只在结算后 `stopReason === 'error'` 时附带 diagnostic**；`completed` / `max-tokens` / `refusal` 形状不变。特别是**取消仍然结算为 `aborted` 且不带 diagnostic**，seam 的「`aborted` 且无 diagnostic ⇒ `killed`」语义不受影响。
+- 是**整函数替换**而非行内改写：`ORIGINAL` 锚点必须逐字匹配且唯一，否则拒绝写入；上游改了 `readResult` 就失败退出，不会产出半截补丁。
+- 回归：`node tools/test-dsh-subagent-diagnostic-compat.mjs`（15 条断言，用桩驱动**补丁后真实源码**里的 `readResult`：502/403 文案成 diagnostic、缺 code / 缺 message 的退化、取消不带 diagnostic、structured 优先、超长截断到 4096 字节）。
+- 回滚：`--revert` 按当前 dsh 版本的备份字节级还原（已在隔离树上验证 revert 精确回到未打补丁的 `A169B6DA…`）。
+- 已接入三个入口：`tools/dsh-web-safe.ps1`（日常启动）、ynm3000 的 `apply-dsh-compat.ps1` 与 `update-dsh-compat.ps1`（均为 revert → apply → verify）。**dsh 升级会覆盖安装目录，升级后必须经上述任一入口再打一次**，否则这条修复静默消失。
+
 ## 为什么是"补丁工具"而不是 cordis 运行时插件
 
 DSH 工具管道在派发前把模型参数**冻结**，公开扩展点都无法修改参数：
