@@ -9,6 +9,9 @@
     "verify": "node tools/verify-dsh-permission-compat.mjs",
     "repair:session-control": "node tools/ensure-dsh-session-control-compat.mjs",
     "test:session-control": "node tools/test-session-control-compat.mjs",
+    "apply:context-recovery": "node tools/apply-dsh-context-recovery-compat.mjs",
+    "verify:context-recovery": "node tools/apply-dsh-context-recovery-compat.mjs --verify",
+    "revert:context-recovery": "node tools/apply-dsh-context-recovery-compat.mjs --revert",
     "revert": "node tools/apply-dsh-permission-compat.mjs --revert",
     "start": "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/dsh-web-safe.ps1"
   },
