@@ -163,7 +163,11 @@ function stamp() {
 }
 
 function readTarget() {
-	if (!existsSync(filePath)) throw new Error(`Refusing to touch dsh ${packageJson.version}: ${TARGET.module} is missing at ${filePath}`);
+	if (!existsSync(filePath)) {
+		// 0.2.1+ split/removed dsh-subagent-in-process-driver (fork/spawn packages replace it).
+		console.log(`SKIP ${MARKER}: ${TARGET.module} is absent in dsh ${packageJson.version} (module retired upstream)`);
+		return null;
+	}
 	return readFileSync(filePath, 'utf8');
 }
 
@@ -181,6 +185,7 @@ function revert() {
 
 function verify() {
 	const source = readTarget();
+	if (source === null) return;
 	const problems = [];
 	if (!source.includes(MARKER)) problems.push(`marker ${MARKER} is absent`);
 	if (!source.includes(PATCHED)) problems.push('patched readResult body is not present verbatim');
@@ -198,6 +203,7 @@ function verify() {
 
 function apply() {
 	const source = readTarget();
+	if (source === null) return false;
 	if (source.includes(MARKER)) {
 		console.log(`SKIP ${MARKER} already applied to ${TARGET.module} (dsh ${packageJson.version})`);
 		return false;
@@ -227,4 +233,5 @@ if (process.argv.includes('--verify')) {
 }
 const patched = apply();
 if (patched) verify();
-console.log(`${patched ? 'patched' : 'already in place'}: ${TARGET.module} for dsh ${packageJson.version}`);
+else if (!existsSync(filePath)) console.log(`skipped (module retired): ${TARGET.module} for dsh ${packageJson.version}`);
+else console.log(`already in place: ${TARGET.module} for dsh ${packageJson.version}`);

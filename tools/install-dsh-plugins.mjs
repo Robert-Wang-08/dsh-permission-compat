@@ -8,10 +8,10 @@ const profileIndex = args.indexOf('--profile');
 const PROFILE = profileIndex >= 0 && args[profileIndex + 1] ? args[profileIndex + 1] : 'web';
 
 const PINS = {
-	'@deepseek-ai/dsh-subagent-claude-code': '0.2.0-rc.2',
-	'@deepseek-ai/dsh-subagent-codex': '0.2.0-rc.2',
-	'@deepseek-ai/dsh-subagent-acp': '0.2.0-rc.2',
-	'@deepseek-ai/dsh-mcp-client': '0.2.0-rc.2',
+	'@deepseek-ai/dsh-subagent-claude-code': '0.2.1-rc.5',
+	'@deepseek-ai/dsh-subagent-codex': '0.2.1-rc.5',
+	'@deepseek-ai/dsh-subagent-acp': '0.2.1-rc.5',
+	'@deepseek-ai/dsh-mcp-client': '0.2.1-rc.5',
 	'dsh-chat-import': '0.25.2',
 };
 
